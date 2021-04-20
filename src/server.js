@@ -11,7 +11,7 @@ const streamURL = "https://api.twitter.com/2/tweets/search/stream";
 const rules = [
   {
     value:
-      "from:IrrawaddyNews OR from:RFABurmese OR from:MyanmarNow OR from:Myanmar_now_Eng OR from: MizzimaNews OR from:dvbburmese",
+      "from:IrrawaddyNews from:RFABurmese from:MyanmarNow from:Myanmar_now_Eng from:MizzimaNews from:dvbburmese",
   },
 ];
 
@@ -69,7 +69,7 @@ async function setRules() {
     },
   });
 
-  if (response.statusCode !== 200) {
+  if (response.statusCode !== 201) {
     throw new Error(response.body);
   }
 
@@ -80,11 +80,11 @@ function streamConnect(retryAttempt) {
   const stream = needle.get(streamURL, {
     headers: {
       "User-Agent": "v2FilterStreamJS",
-      Authorization: `Bearer ${token}`,
+      authorization: `Bearer ${token}`,
     },
     timeout: 20000,
   });
-  console.log("stream...");
+
   stream
     .on("data", async (data) => {
       try {
@@ -131,14 +131,14 @@ function streamConnect(retryAttempt) {
 }
 
 (async () => {
+  let currentRules;
   try {
     // Gets the complete list of rules currently applied to the stream
-    let currentRules = await getAllRules();
-    console.log(currentRules);
+    currentRules = await getAllRules();
     // Delete all rules.
-    //await deleteAllRules(currentRules);
+    await deleteAllRules(currentRules);
     // Set new rules
-    //await setRules();
+    await setRules();
   } catch (e) {
     console.error(e);
     process.exit(1);
