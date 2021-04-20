@@ -11,7 +11,7 @@ const streamURL = "https://api.twitter.com/2/tweets/search/stream";
 const rules = [
   {
     value:
-      "from:IrrawaddyNews from:RFABurmese from:MyanmarNow from:Myanmar_now_Eng from:MizzimaNews from:dvbburmese",
+      "from:IrrawaddyNews OR from:Myanmar_Now_Eng OR from:Voaburmese OR from:MizzimaNews OR from:RFABurmese",
   },
 ];
 
@@ -79,28 +79,31 @@ async function setRules() {
 function streamConnect(retryAttempt) {
   const stream = needle.get(streamURL, {
     headers: {
-      "User-Agent": "v2FilterStreamJS",
-      authorization: `Bearer ${token}`,
+      // "User-Agent": "v2FilterStreamJS",
+      Authorization: `Bearer ${token}`,
     },
     timeout: 20000,
   });
 
   stream
-    .on("data", async (data) => {
+    .on("data", (data) => {
       try {
         const json = JSON.parse(data);
-        console.log(`data: ${json}`);
+        console.log(json);
+
         let data = {
           id: json.data.id,
           text: json.data.text,
         };
-        const res = await needle("post", `${process.env.API}`, data, {
+        needle("post", `${process.env.API}`, data, {
           headers: {
             "content-type": "application/json",
             authorization: `${process.env.SECRET}`,
           },
-        });
-        console.log(`res: ${res}`);
+        })
+          .then((res) => console.log(res))
+          .catch((err) => console.log(err));
+
         //successful connection resets retry count.
         retryAttempt = 0;
       } catch (e) {
@@ -143,7 +146,6 @@ function streamConnect(retryAttempt) {
     console.error(e);
     process.exit(1);
   }
-
   // Listen to the stream
   streamConnect(0);
 })();
