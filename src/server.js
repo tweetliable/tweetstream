@@ -86,18 +86,18 @@ function streamConnect(retryAttempt) {
   });
 
   stream
-    .on("data", (data) => {
+    .on("data", async (data) => {
       try {
         const json = JSON.parse(data);
         let data = {
-            id: json.data.id,
-            text: json.data.text
+          id: json.data.id,
+          text: json.data.text,
         };
         await needle("post", `${process.env.API}`, data, {
-            headers: {
-                "content-type": "application/json",
-                authorization: `${process.env.SECRET}`
-            }
+          headers: {
+            "content-type": "application/json",
+            authorization: `${process.env.SECRET}`,
+          },
         });
         //successful connection resets retry count.
         retryAttempt = 0;
