@@ -84,21 +84,23 @@ function streamConnect(retryAttempt) {
     },
     timeout: 20000,
   });
-
+  console.log("stream...");
   stream
     .on("data", async (data) => {
       try {
         const json = JSON.parse(data);
+        console.log(`data: ${json}`);
         let data = {
           id: json.data.id,
           text: json.data.text,
         };
-        await needle("post", `${process.env.API}`, data, {
+        const res = await needle("post", `${process.env.API}`, data, {
           headers: {
             "content-type": "application/json",
             authorization: `${process.env.SECRET}`,
           },
         });
+        console.log(`res: ${res}`);
         //successful connection resets retry count.
         retryAttempt = 0;
       } catch (e) {
@@ -129,17 +131,14 @@ function streamConnect(retryAttempt) {
 }
 
 (async () => {
-  let currentRules;
-
   try {
     // Gets the complete list of rules currently applied to the stream
-    currentRules = await getAllRules();
-
+    let currentRules = await getAllRules();
+    console.log(currentRules);
     // Delete all rules.
-    await deleteAllRules(currentRules);
-
+    //await deleteAllRules(currentRules);
     // Set new rules
-    await setRules();
+    //await setRules();
   } catch (e) {
     console.error(e);
     process.exit(1);
