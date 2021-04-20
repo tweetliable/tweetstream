@@ -11,10 +11,11 @@ const streamURL = "https://api.twitter.com/2/tweets/search/stream";
 const rules = [
   {
     value:
-      "from:IrrawaddyNews OR from:Myanmar_Now_Eng OR from:Voaburmese OR from:MizzimaNews OR from:RFABurmese",
+      "from:IrrawaddyNews OR from:Myanmar_Now_Eng OR from:dvbburmese OR from:MizzimaNews OR from:Khithitofficial OR from:RFABurmese",
   },
 ];
 
+// get rules
 async function getAllRules() {
   const response = await needle("get", rulesURL, {
     headers: {
@@ -30,6 +31,7 @@ async function getAllRules() {
   return response.body;
 }
 
+// delete the passed rules
 async function deleteAllRules(rules) {
   if (!Array.isArray(rules.data)) {
     return null;
@@ -57,6 +59,7 @@ async function deleteAllRules(rules) {
   return response.body;
 }
 
+// set new rules
 async function setRules() {
   const data = {
     add: rules,
@@ -76,10 +79,24 @@ async function setRules() {
   return response.body;
 }
 
+// transmit data to api
+async function storeData(payload) {
+  try {
+    await needle("post", `${process.env.API}`, payload, {
+      headers: {
+        "content-type": "application/json",
+        authorization: `${process.env.SECRET}`,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// connect to stream
 function streamConnect(retryAttempt) {
   const stream = needle.get(streamURL, {
     headers: {
-      // "User-Agent": "v2FilterStreamJS",
       Authorization: `Bearer ${token}`,
     },
     timeout: 20000,
@@ -91,18 +108,12 @@ function streamConnect(retryAttempt) {
         const json = JSON.parse(data);
         console.log(json);
 
-        let data = {
+        let payload = {
           id: json.data.id,
           text: json.data.text,
         };
-        needle("post", `${process.env.API}`, data, {
-          headers: {
-            "content-type": "application/json",
-            authorization: `${process.env.SECRET}`,
-          },
-        })
-          .then((res) => console.log(res))
-          .catch((err) => console.log(err));
+
+        storeData(payload);
 
         //successful connection resets retry count.
         retryAttempt = 0;
