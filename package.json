@@ -1,0 +1,17 @@
+{
+  "name": "tweetstream",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "tweetliable",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "needle": "^2.6.0"
+  }
+}
