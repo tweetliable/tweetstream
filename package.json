@@ -11,7 +11,9 @@
   "author": "tweetliable",
   "license": "ISC",
   "dependencies": {
+    "app-root-path": "^3.0.0",
     "dotenv": "^8.2.0",
-    "needle": "^2.6.0"
+    "needle": "^2.6.0",
+    "winston": "^3.3.3"
   }
 }

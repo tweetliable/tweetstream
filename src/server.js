@@ -2,6 +2,7 @@
 require("dotenv").config();
 
 const needle = require("needle");
+const logger = require("./config/logger");
 
 const token = process.env.BEARER_TOKEN;
 
@@ -24,7 +25,7 @@ async function getAllRules() {
   });
 
   if (response.statusCode !== 200) {
-    console.log("Error: ", response.statusMessage, response.statusCode);
+    logger.error(`${response.statusCode} - ${response.statusMessage}`);
     throw new Error(response.body);
   }
 
@@ -89,7 +90,7 @@ async function storeData(payload) {
       },
     });
   } catch (err) {
-    console.log(err);
+    logger.error(`${err.statusCode} - ${err.body}`);
   }
 }
 
@@ -106,7 +107,7 @@ function streamConnect(retryAttempt) {
     .on("data", (data) => {
       try {
         const json = JSON.parse(data);
-        console.log(json);
+        logger.info(json);
 
         let payload = {
           id: json.data.id,
@@ -117,25 +118,25 @@ function streamConnect(retryAttempt) {
 
         //successful connection resets retry count.
         retryAttempt = 0;
-      } catch (e) {
+      } catch (err) {
         if (
           data.detail ===
           "This stream is currently at the maximum allowed connection limit."
         ) {
-          console.log(data.detail);
+          logger.error(data.detail);
           process.exit(1);
         } else {
-          // Do nothing
+          // Keep alive signal received. Do nothing
         }
       }
     })
     .on("err", (error) => {
       if (error.code !== "ECONNRESET") {
-        console.log(error.code);
+        logger.error(error.code);
         proess.exit(1);
       } else {
         setTimeout(() => {
-          console.warn("A connection error occurred. Reconnecting...");
+          logger.warn("A connection error occurred. Reconnecting...");
           streamConnect(++retryAttempt);
         }, 2 ** retryAttempt);
       }
@@ -145,18 +146,20 @@ function streamConnect(retryAttempt) {
 }
 
 (async () => {
-  let currentRules;
-  try {
-    // Gets the complete list of rules currently applied to the stream
-    currentRules = await getAllRules();
-    // Delete all rules.
-    await deleteAllRules(currentRules);
-    // Set new rules
-    await setRules();
-  } catch (e) {
-    console.error(e);
-    process.exit(1);
-  }
+  // can comment out if no need to touch rules
+  // let currentRules;
+  // try {
+  //   // Gets the complete list of rules currently applied to the stream
+  //   currentRules = await getAllRules();
+  //   // Delete all rules.
+  //   await deleteAllRules(currentRules);
+  //   // Set new rules
+  //   await setRules();
+  // } catch (err) {
+  //   logger.error(err);
+  //   process.exit(1);
+  // }
+
   // Listen to the stream
   streamConnect(0);
 })();
