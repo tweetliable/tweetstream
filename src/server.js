@@ -133,7 +133,7 @@ function streamConnect(retryAttempt) {
     .on("err", (error) => {
       if (error.code !== "ECONNRESET") {
         logger.error(error.code);
-        proess.exit(1);
+        process.exit(1);
       } else {
         setTimeout(() => {
           logger.warn("A connection error occurred. Reconnecting...");
